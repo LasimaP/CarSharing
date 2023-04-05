@@ -10,19 +10,16 @@ public class DatabaseConnector {
     static final String USER = "sa";
     static final String PASS = "";
     private Connection conn = null;
-    private String fileName;
+    private final String fileName;
 
     public DatabaseConnector(String fileName) {
         this.fileName = fileName;
     }
 
     public Connection getConnection() {
-        try {
-            // STEP 1: Register JDBC driver
-            Class.forName(JDBC_DRIVER);
 
-            // STEP 2: Open a connection
-            //System.out.println("Connecting to database...");
+        try {
+            Class.forName(JDBC_DRIVER);
             conn = DriverManager.getConnection(DB_URL + fileName, USER, PASS);
             return conn;
         } catch (SQLException | ClassNotFoundException e) {
@@ -32,9 +29,7 @@ public class DatabaseConnector {
 
     public void closeConnection() {
         try {
-            //System.out.println("Closing Connection...");
             if (conn != null) conn.close();
-            //System.out.println("Goodbye!");
         } catch (SQLException se) {
             se.printStackTrace();
         }
