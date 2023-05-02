@@ -2,6 +2,7 @@ package carsharing;
 
 import carsharing.car.CarDaoImpl;
 import carsharing.company.CompanyDaoImpl;
+import carsharing.customer.CustomerDaoImpl;
 import carsharing.dataaccess.DatabaseConnector;
 
 public class Main {
@@ -12,11 +13,15 @@ public class Main {
         DatabaseConnector databaseConnector = new DatabaseConnector(databaseFileName);
         CompanyDaoImpl companyDao = new CompanyDaoImpl(databaseConnector);
         CarDaoImpl carDao = new CarDaoImpl(databaseConnector);
+        CustomerDaoImpl customerDao = new CustomerDaoImpl(databaseConnector);
 
-        Menu menu = new Menu(companyDao, carDao);
+        Menu menu = new Menu(companyDao, carDao, customerDao);
 
         menu.mainMenu();
-        carDao.dropCarTable();
-        companyDao.dropCompanyTable();
+
+        // Commands To Clear Data
+//        customerDao.dropCustomerTable();
+//        carDao.dropCarTable();
+//        companyDao.dropCompanyTable();
     }
 }

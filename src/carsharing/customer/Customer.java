@@ -1,10 +1,10 @@
-package carsharing.company;
+package carsharing.customer;
 
-public class Company {
+public class Customer {
     private String name;
     private int id;
 
-    public Company(String name, int id) {
+    public Customer(String name, int id) {
         this.name = name;
         this.id = id;
     }

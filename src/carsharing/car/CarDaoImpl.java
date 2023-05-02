@@ -6,6 +6,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CarDaoImpl implements CarDao {
     private final DatabaseConnector databaseConnector;
@@ -48,14 +50,13 @@ public class CarDaoImpl implements CarDao {
     }
 
     @Override
-    public void addCar(String name, int foreignKey) {
+    public void addCar(String name, int companyID) {
         try (
                 Connection conn = this.databaseConnector.getConnection();
                 Statement stmt = conn.createStatement()
         ) {
-            Car car = new Car(name);
             String sql = "INSERT INTO Car (name, company_id) " +
-                    "VALUES ('" + car.getName() + "', '" + foreignKey + "')";
+                    "VALUES ('" + name + "', '" + companyID + "')";
             stmt.executeUpdate(sql);
             System.out.println("The car was added!");
         } catch (SQLException se) {
@@ -64,30 +65,47 @@ public class CarDaoImpl implements CarDao {
     }
 
     @Override
-    public void listCars(int foreignKey) {
+    public List<Car> listCars(int companyID) {
+        List<Car> carList = new ArrayList<>();
         try (
                 Connection conn = this.databaseConnector.getConnection();
                 Statement stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
                         ResultSet.CONCUR_UPDATABLE)
         ) {
             String sql = "SELECT id, name FROM CAR " +
-                    "WHERE company_id = " + foreignKey;
+                    "WHERE company_id = " + companyID;
             ResultSet rs = stmt.executeQuery(sql);
 
-            if (rs.next()) {
-                System.out.println("Car list:");
-                rs.previous();
-            } else {
-                System.out.println("The car list is empty!");
-            }
-            int count = 1;
             while (rs.next()) {
+                int carID = rs.getInt(1);
                 String carName = rs.getObject(2).toString();
-                System.out.println(count + ". " + carName);
-                count++;
+                Car car = new Car(carName, carID);
+                carList.add(car);
             }
         } catch (SQLException se) {
             se.printStackTrace();
         }
+        return carList;
+    }
+
+    public Car getCar(String carName) {
+        Car car = null;
+        try (
+                Connection conn = this.databaseConnector.getConnection();
+                Statement stmt = conn.createStatement()
+        ) {
+            String sql = "SELECT * " +
+                    "FROM CAR " +
+                    "WHERE name = '" + carName + "'";
+            ResultSet rs = stmt.executeQuery(sql);
+            if (rs.next()) {
+                int carID = rs.getInt(1);
+                car = new Car(carName, carID);
+            }
+
+        } catch (SQLException se) {
+            se.printStackTrace();
+        }
+        return car;
     }
 }

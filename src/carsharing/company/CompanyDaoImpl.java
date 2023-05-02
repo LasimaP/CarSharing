@@ -6,6 +6,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CompanyDaoImpl implements CompanyDao {
     private final DatabaseConnector databaseConnector;
@@ -22,10 +24,8 @@ public class CompanyDaoImpl implements CompanyDao {
                 Connection conn = this.databaseConnector.getConnection();
                 Statement stmt = conn.createStatement()
         ) {
-            //System.out.println("Dropping a table...");
             String sql = "DROP TABLE IF EXISTS COMPANY";
             stmt.executeUpdate(sql);
-            //System.out.println("Table dropped");
         } catch (SQLException se) {
             se.printStackTrace();
         }
@@ -48,15 +48,15 @@ public class CompanyDaoImpl implements CompanyDao {
     }
 
     @Override
-    public void addCompany(String name) {
+    public void addCompany(String companyName) {
         try (
                 Connection conn = this.databaseConnector.getConnection();
                 Statement stmt = conn.createStatement()
         ) {
-            Company company = new Company(name);
             String sql = "INSERT INTO COMPANY (name) " +
-                    "VALUES ('" + company.getName() + "')";
+                    "VALUES ('" + companyName + "')";
             stmt.executeUpdate(sql);
+
             System.out.println("The company was created!");
         } catch (SQLException se) {
             se.printStackTrace();
@@ -64,7 +64,8 @@ public class CompanyDaoImpl implements CompanyDao {
     }
 
     @Override
-    public boolean listCompanies() {
+    public List<Company> listCompanies() {
+        List<Company> companyList = new ArrayList<>();
         try (
                 Connection conn = this.databaseConnector.getConnection();
                 Statement stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
@@ -74,46 +75,40 @@ public class CompanyDaoImpl implements CompanyDao {
             ResultSet rs = stmt.executeQuery(sql);
 
 
-            if (rs.next()) {
-                System.out.println("Choose the company:");
-                rs.previous();
-                while (rs.next()) {
-                    int id = rs.getInt(1);
-                    String companyName = rs.getObject(2).toString();
-                    System.out.println(id + ". " + companyName);
-                }
-                return true;
-            } else {
-                System.out.println("The company list is empty!");
-                return false;
+            while (rs.next()) {
+                int companyID = rs.getInt(1);
+                String companyName = rs.getObject(2).toString();
+                Company company = new Company(companyName, companyID);
+                companyList.add(company);
             }
-
         } catch (SQLException se) {
             se.printStackTrace();
         }
-        return false;
+        return companyList;
     }
 
-    public String getCompany (int id) {
+    public Company getCompany(int companyID) {
+        Company company = null;
         try (
                 Connection conn = this.databaseConnector.getConnection();
                 Statement stmt = conn.createStatement()
         ) {
             String sql = "SELECT * " +
                     "FROM COMPANY " +
-                    "WHERE id = " + id;
+                    "WHERE id = " + companyID;
             ResultSet rs = stmt.executeQuery(sql);
             if (rs.next()) {
-                return rs.getObject(2).toString();
+                String companyName = rs.getObject(2).toString();
+                company = new Company(companyName, companyID);
             }
 
         } catch (SQLException se) {
             se.printStackTrace();
         }
-        return "null";
+        return company;
     }
-
     public void closeConnection() {
         this.databaseConnector.closeConnection();
     }
 }
+
